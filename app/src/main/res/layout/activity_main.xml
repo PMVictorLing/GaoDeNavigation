@@ -14,4 +14,11 @@
         android:text="开始导航"/>
 
 
+    <Button
+        android:id="@+id/bt_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="万能dialog"/>
+
+
 </LinearLayout>
