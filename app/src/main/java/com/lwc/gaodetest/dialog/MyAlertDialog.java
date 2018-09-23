@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import com.lwc.gaodetest.R;
 
 /**
+ * 具体的弹窗对象
+ * <p>
  * Created by lingwancai on
  * 2018/9/21 20:27
  */
@@ -26,6 +28,36 @@ public class MyAlertDialog extends Dialog {
         mAlert = new AlertController(this, getWindow());
     }
 
+
+    /**
+     * 设置文本
+     *
+     * @param viewId
+     * @param charSequence
+     */
+    public void setText(int viewId, CharSequence charSequence) {
+        mAlert.setText(viewId, charSequence);
+
+    }
+
+    public <T extends View> T getView(int viewId) {
+        return mAlert.getView(viewId);
+    }
+
+    /**
+     * 设置监听
+     *
+     * @param viewId
+     * @param listener
+     */
+    public void setOnClickLisener(int viewId, View.OnClickListener listener) {
+        mAlert.setOnClickLisener(viewId,listener);
+    }
+
+
+    /**
+     * 规范一系列的组装过程
+     */
     public static class Builder {
 
         public AlertController.AlertParams P;
@@ -162,13 +194,11 @@ public class MyAlertDialog extends Dialog {
         }
 
         /**
-         *
-         *
          * @param isAnimation
          * @return
          */
         public Builder setStartBottom(boolean isAnimation) {
-            if (isAnimation){
+            if (isAnimation) {
                 //动画
                 P.mAnimations = R.style.mydialogstyle;
             }
@@ -184,7 +214,7 @@ public class MyAlertDialog extends Dialog {
          * @param height
          * @return
          */
-        public Builder setWidthAndHeight(int width, int height){
+        public Builder setWidthAndHeight(int width, int height) {
             P.mWidth = width;
             P.mHeight = height;
             return this;
@@ -195,7 +225,7 @@ public class MyAlertDialog extends Dialog {
          *
          * @return
          */
-        public Builder adddefaultAnimation(){
+        public Builder adddefaultAnimation() {
             P.mAnimations = R.style.mydialogstyle;
             return this;
         }
@@ -206,7 +236,7 @@ public class MyAlertDialog extends Dialog {
          * @param animation
          * @return
          */
-        public Builder setAnimation(int animation){
+        public Builder setAnimation(int animation) {
             P.mAnimations = animation;
             return this;
         }

@@ -10,6 +10,8 @@ import android.view.Window;
 import android.view.WindowManager;
 
 /**
+ * 具体的构造器
+ * <p>
  * Created by lingwancai on
  * 2018/9/21 20:31
  */
@@ -19,6 +21,9 @@ public class AlertController {
     private MyAlertDialog myAlertDialog;
     private Window mWindow;
 
+    //
+    DialogViewHelper viewHelper;
+
     public AlertController(MyAlertDialog myAlertDialog, Window window) {
         this.myAlertDialog = myAlertDialog;
         this.mWindow = window;
@@ -26,6 +31,10 @@ public class AlertController {
 
     public MyAlertDialog getMyAlertDialog() {
         return myAlertDialog;
+    }
+
+    public void setViewHelper(DialogViewHelper viewHelper) {
+        this.viewHelper = viewHelper;
     }
 
     /**
@@ -37,6 +46,34 @@ public class AlertController {
         return mWindow;
     }
 
+    /**
+     * 设置文本
+     *
+     * @param viewId
+     * @param charSequence
+     */
+    public void setText(int viewId, CharSequence charSequence) {
+        viewHelper.setText(viewId, charSequence);
+
+    }
+
+    public <T extends View> T getView(int viewId) {
+        return viewHelper.getView(viewId);
+    }
+
+    /**
+     * 设置监听
+     *
+     * @param viewId
+     * @param listener
+     */
+    public void setOnClickLisener(int viewId, View.OnClickListener listener) {
+        viewHelper.setOnClickLisener(viewId, listener);
+    }
+
+    /**
+     * 存放参数和一些设置参数的方法
+     */
     public static class AlertParams {
         public int mThemeResId;
         public Context mContext;
@@ -109,6 +146,9 @@ public class AlertController {
             for (int i = 0; i < clickSize; i++) {
                 mDialogViewHelper.setOnClickLisener(mClickArray.keyAt(i), mClickArray.valueAt(i));
             }
+
+            //设置ViewHelper
+            dialog.setViewHelper(mDialogViewHelper);
 
             //4.配置自定义效果 全屏 弹出动画 位置
             Window window = dialog.getmWindow();
