@@ -20,5 +20,11 @@
         android:layout_height="50dp"
         android:text="万能dialog"/>
 
+    <TextView
+        android:id="@+id/tv_string_size"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
 
 </LinearLayout>

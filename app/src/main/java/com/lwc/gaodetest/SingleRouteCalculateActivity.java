@@ -33,8 +33,8 @@ public class SingleRouteCalculateActivity extends CheckPermissionsActivity imple
     private AMapNaviView mAMapNaviView;
     private AMapNavi mAMapNavi;
 
+    protected NaviLatLng mStartLatlng = new NaviLatLng(28.19786, 112.969687);
     protected NaviLatLng mEndLatlng = new NaviLatLng(40.084894, 116.603039);
-    protected NaviLatLng mStartLatlng = new NaviLatLng(39.825934, 116.342972);
     protected final List<NaviLatLng> sList = new ArrayList<NaviLatLng>();
     protected final List<NaviLatLng> eList = new ArrayList<NaviLatLng>();
     protected List<NaviLatLng> mWayPointList;
@@ -62,7 +62,7 @@ public class SingleRouteCalculateActivity extends CheckPermissionsActivity imple
         mAMapNaviView.setViewOptions(options);
 
         mWayPointList = new ArrayList();
-        mWayPointList.add(new NaviLatLng(39.925846, 116.442765));
+        mWayPointList.add(new NaviLatLng(28.19786, 112.969687));
 
     }
 
@@ -94,7 +94,7 @@ public class SingleRouteCalculateActivity extends CheckPermissionsActivity imple
 
     @Override
     public void onInitNaviFailure() {
-        Log.e("gps","onInitNaviFailure");
+        Log.e("gps", "onInitNaviFailure");
 
     }
 
@@ -120,7 +120,7 @@ public class SingleRouteCalculateActivity extends CheckPermissionsActivity imple
             e.printStackTrace();
         }
         mAMapNavi.calculateDriveRoute(sList, eList, mWayPointList, strategy);
-        Log.e("gps","onInitNaviSuccess");
+        Log.e("gps", "onInitNaviSuccess");
 
     }
 
@@ -136,8 +136,8 @@ public class SingleRouteCalculateActivity extends CheckPermissionsActivity imple
 
     @Override
     public void onLocationChange(AMapNaviLocation aMapNaviLocation) {
-        Log.e("gps","onLocationChange"+aMapNaviLocation.getCoord().getLatitude()+"\n"+
-        ""+aMapNaviLocation.getCoord().getLongitude());
+        Log.e("gps", "onLocationChange" + aMapNaviLocation.getCoord().getLatitude() + "\n" +
+                "" + aMapNaviLocation.getCoord().getLongitude());
 
     }
 
@@ -248,7 +248,7 @@ public class SingleRouteCalculateActivity extends CheckPermissionsActivity imple
 
     @Override
     public void onCalculateRouteSuccess(int[] ids) {
-        Log.e("gps","onCalculateRouteSuccess");
+        Log.e("gps", "onCalculateRouteSuccess");
         mAMapNavi.startNavi(NaviType.EMULATOR);
 //        mAMapNavi.startNavi(NaviType.GPS);
     }
