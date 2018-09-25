@@ -40,15 +40,28 @@ public class MainActivity extends CheckPermissionsActivity {
             public void onClick(View v) {
                 final MyAlertDialog dialog = new MyAlertDialog.Builder(MainActivity.this)
                         .setContentView(R.layout.dialog_layout)
-                        .setText(R.id.tv_start_nva, "修改")
+                        .setText(R.id.tv_start_nva, "重新定位")
                         .setFullWidth().adddefaultAnimation().setStartBottom(true).show();
 
                 //获取到的值
                 final TextView textView = dialog.getView(R.id.tv_start_nva);
+                dialog.setOnClickLisener(R.id.tv_start_nva, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        locationOption = getDefaultOption();
+                        //设置定位参数
+                        locationClient.setLocationOption(locationOption);
+                        startLocation();
+                        Toast.makeText(MainActivity.this, "获取到的值>>>>" + textView.getText(), Toast.LENGTH_LONG).show();
+                        dialog.dismiss();
+
+                    }
+                });
+
                 dialog.setOnClickLisener(R.id.bt_cancle, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(MainActivity.this, "获取到的值>>>>" + textView.getText(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "获取到的值>>>> 取消" , Toast.LENGTH_LONG).show();
                         dialog.dismiss();
                     }
                 });
