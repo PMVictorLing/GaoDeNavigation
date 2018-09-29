@@ -1,9 +1,12 @@
 package com.lwc.gaodetest;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,16 +16,37 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.location.AMapLocationQualityReport;
+import com.amap.api.maps.AMap;
+import com.amap.api.maps.LocationSource;
+import com.amap.api.maps.MapView;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.CameraPosition;
+import com.amap.api.maps.model.Circle;
+import com.amap.api.maps.model.CircleOptions;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 import com.lwc.gaodetest.dialog.MyAlertDialog;
+import com.lwc.gaodetest.http.HttpUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
-public class MainActivity extends CheckPermissionsActivity {
+public class MainActivity extends CheckPermissionsActivity implements LocationSource {
 
+    private static final String TAG = "MainActivity";
     private TextView locationText;
+
+    //定位
     private AMapLocationClient locationClient;
     private AMapLocationClientOption locationOption;
+
+    //地图
+    private MapView mMapView;
+    //初始化地图控制器对象
+    AMap aMap;
+    //测试用
+    private Marker changshamarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +62,12 @@ public class MainActivity extends CheckPermissionsActivity {
         this.findViewById(R.id.bt_dialog).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                //.setStartBottom(true)
                 final MyAlertDialog dialog = new MyAlertDialog.Builder(MainActivity.this)
                         .setContentView(R.layout.dialog_layout)
                         .setText(R.id.tv_start_nva, "重新定位")
-                        .setFullWidth().adddefaultAnimation().setStartBottom(true).show();
+                        .setFullWidth().adddefaultAnimation().show();
 
                 //获取到的值
                 final TextView textView = dialog.getView(R.id.tv_start_nva);
@@ -61,7 +87,7 @@ public class MainActivity extends CheckPermissionsActivity {
                 dialog.setOnClickLisener(R.id.bt_cancle, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(MainActivity.this, "获取到的值>>>> 取消" , Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "获取到的值>>>> 取消", Toast.LENGTH_LONG).show();
                         dialog.dismiss();
                     }
                 });
@@ -70,11 +96,170 @@ public class MainActivity extends CheckPermissionsActivity {
 
         //定位
         locationText = (TextView) this.findViewById(R.id.tv_string_size);
-        initLocation();
-        startLocation();
+//        initLocation();
+//        startLocation();
 
+        //初始化地图
+        //获取地图控件引用
+        mMapView = (MapView) findViewById(R.id.map);
+        //在activity执行onCreate时执行mMapView.onCreate(savedInstanceState)，创建地图
+        mMapView.onCreate(savedInstanceState);
+
+        if (aMap == null) {
+            aMap = mMapView.getMap();
+        }
+        // 设置定位监听
+        aMap.setLocationSource(this);
+        // 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
+        aMap.setMyLocationEnabled(true);
+        // 设置定位的类型为定位模式，有定位、跟随或地图根据面向方向旋转几种
+        aMap.setMyLocationType(AMap.LOCATION_TYPE_LOCATE);
+        //显示室内地图
+        aMap.showIndoorMap(true);
+
+
+        //绘制覆盖物 marker
+        changshamarker = aMap.addMarker(new MarkerOptions()
+                .position(new LatLng(28.198439, 112.970308))
+                .icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(), R.drawable.poi_marker_pressed)))
+                //设置marker平贴地图效果 setFlat
+                .title("长沙 ¥ 4850元/吨").setFlat(true).visible(true)
+                .draggable(true));
+
+        //.addMarkers(markerOptionlst, true);添加多个点
+//        aMap.addMarkers(markerOptionlst, true);
+        Marker zhuzhoumarker = aMap.addMarker(new MarkerOptions()
+                .position(new LatLng(27.833333, 113.166666))
+                .icon(BitmapDescriptorFactory.fromBitmap(BitmapFactory
+                        .decodeResource(getResources(), R.drawable.poi_marker_pressed)))
+                //设置marker平贴地图效果 setFlat
+                .title("株洲 ¥ 4600元/吨").setFlat(true).visible(true)
+                .draggable(true));
+
+        // 绑定 Marker 被点击事件
+        aMap.setOnMarkerClickListener(markerClickListener);
+
+        //绑定信息窗点击事件
+        aMap.setOnInfoWindowClickListener(mInfoWindowListener);
+
+        //自定义infoWindow
+        aMap.setInfoWindowAdapter(new MyInfoWindowAdapter());//AMap类中
+
+        //当前地图的缩放级别为
+        aMap.setOnCameraChangeListener(new AMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+
+            }
+
+            @Override
+            public void onCameraChangeFinish(CameraPosition cameraPosition) {
+                Toast.makeText(MainActivity.this, "缩放" + "当前地图的缩放级别为: " + cameraPosition.zoom, +Toast.LENGTH_LONG).show();
+                if (cameraPosition.zoom > 5) {
+                    //如果是不可见
+                    if (!changshamarker.isInfoWindowShown()) {
+                        changshamarker.showInfoWindow();
+                        changshamarker.setVisible(true);
+
+                        Log.e(TAG, "!changshamarker.isVisible");
+                    }
+                }
+
+                if (cameraPosition.zoom <= 5) {
+                    //如果是显示
+                    if (changshamarker.isInfoWindowShown()) {
+                        changshamarker.hideInfoWindow();
+                        changshamarker.setVisible(false);
+                        Log.e(TAG, "changshamarker.isVisible");
+                    }
+                }
+            }
+        });
+
+        //地图的加减 监听缩放
+        aMap.setOnMapLoadedListener(new AMap.OnMapLoadedListener() {
+            @Override
+            public void onMapLoaded() {
+                Toast.makeText(MainActivity.this, "加减" + "当前地图的缩放级别为: " + aMap.getCameraPosition().zoom, +Toast.LENGTH_LONG).show();
+            }
+        });
+
+//        addCircleOptions().setVisible(true);
+
+        //请求测试
+        HttpUtils.with(this).Url("").addParam("","").get().execute(null);
 
     }
+
+    /**
+     * 添加一个圆
+     */
+    private Circle addCircleOptions() {
+        Circle circle = aMap.addCircle(new CircleOptions().center(new LatLng(28.198439, 112.970308)).radius(10000)
+                .strokeWidth(2f).strokeColor(R.color.colorPrimary).fillColor(R.color.colorPrimary));
+        return circle;
+    }
+
+    /**
+     * 自定义infoWindow样式
+     */
+    class MyInfoWindowAdapter implements AMap.InfoWindowAdapter {
+
+        private View mInfoWindow;
+
+        /**
+         * 监听自定义infowindow窗口的infowindow事件回调
+         *
+         * @param marker
+         * @return
+         */
+        @Override
+        public View getInfoWindow(Marker marker) {
+            if (mInfoWindow == null) {
+                mInfoWindow = LayoutInflater.from(MainActivity.this).inflate(
+                        R.layout.map_location_info_window, null);
+            }
+            render(marker, mInfoWindow);
+            return mInfoWindow;
+        }
+
+        private void render(Marker marker, View mInfoWindow) {
+            TextView tvTitle = (TextView) mInfoWindow.findViewById(R.id.tv_title);
+            TextView tvPrices = (TextView) mInfoWindow.findViewById(R.id.tv_prices);
+            tvPrices.setText(marker.getTitle() + "");
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+            return null;
+        }
+    }
+
+    /**
+     * infoWindow监听回调
+     */
+    AMap.OnInfoWindowClickListener mInfoWindowListener = new AMap.OnInfoWindowClickListener() {
+
+        @Override
+        public void onInfoWindowClick(Marker arg0) {
+            //修改值
+//            arg0.setTitle("infowindow clicked");
+            Toast.makeText(MainActivity.this, "" + arg0.getTitle(), +Toast.LENGTH_LONG).show();
+        }
+    };
+
+    // 定义 Marker 点击事件监听
+    AMap.OnMarkerClickListener markerClickListener = new AMap.OnMarkerClickListener() {
+        // marker 对象被点击时回调的接口
+        // 返回 true 则表示接口已响应事件，否则返回false
+        @Override
+        public boolean onMarkerClick(Marker marker) {
+            Toast.makeText(MainActivity.this, "" + marker.getTitle(), +Toast.LENGTH_LONG).show();
+//            marker.showInfoWindow();
+            return false;
+        }
+    };
 
     /**
      * 开始定位
@@ -113,6 +298,19 @@ public class MainActivity extends CheckPermissionsActivity {
     AMapLocationListener locationListener = new AMapLocationListener() {
         @Override
         public void onLocationChanged(AMapLocation location) {
+
+            if (mListener != null && location != null) {
+                if (location != null
+                        && location.getErrorCode() == 0) {
+                    mListener.onLocationChanged(location);// 显示系统小蓝点
+                    Log.e("AmapErr", "经    度    : " + location.getLongitude() + "\n"
+                            + "纬    度    : " + location.getLatitude() + "\n");
+                } else {
+                    String errText = "定位失败," + location.getErrorCode() + ": " + location.getErrorInfo();
+                    Log.e("AmapErr", errText);
+                }
+            }
+
             if (null != location) {
 
                 StringBuffer sb = new StringBuffer();
@@ -237,6 +435,30 @@ public class MainActivity extends CheckPermissionsActivity {
     protected void onDestroy() {
         super.onDestroy();
         destroyLocation();
+
+        //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
+        mMapView.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
+        mMapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //在activity执行onPause时执行mMapView.onPause ()，暂停地图的绘制
+        mMapView.onPause();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //在activity执行onSaveInstanceState时执行mMapView.onSaveInstanceState (outState)，保存地图当前的状态
+        mMapView.onSaveInstanceState(outState);
     }
 
     /**
@@ -246,6 +468,7 @@ public class MainActivity extends CheckPermissionsActivity {
      * @since 2.8.0
      */
     private void destroyLocation() {
+
         if (null != locationClient) {
             /**
              * 如果AMapLocationClient是在当前Activity实例化的，
@@ -255,5 +478,47 @@ public class MainActivity extends CheckPermissionsActivity {
             locationClient = null;
             locationOption = null;
         }
+    }
+
+    OnLocationChangedListener mListener;
+    AMapLocationClient mlocationClient;
+    AMapLocationClientOption mLocationOption;
+
+    /**
+     * 激活定位
+     */
+    @Override
+    public void activate(OnLocationChangedListener listener) {
+        mListener = listener;
+        if (mlocationClient == null) {
+            //初始化定位
+            mlocationClient = new AMapLocationClient(this);
+            //初始化定位参数
+            mLocationOption = new AMapLocationClientOption();
+            //设置定位回调监听
+            mlocationClient.setLocationListener(locationListener);
+            //设置为高精度定位模式
+            mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
+            //设置定位参数
+            mlocationClient.setLocationOption(mLocationOption);
+            // 此方法为每隔固定时间会发起一次定位请求，为了减少电量消耗或网络流量消耗，
+            // 注意设置合适的定位时间的间隔（最小间隔支持为2000ms），并且在合适时间调用stopLocation()方法来取消定位请求
+            // 在定位结束后，在合适的生命周期调用onDestroy()方法
+            // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
+            mlocationClient.startLocation();//启动定位
+        }
+    }
+
+    /**
+     * 停止定位
+     */
+    @Override
+    public void deactivate() {
+        mListener = null;
+        if (mlocationClient != null) {
+            mlocationClient.stopLocation();
+            mlocationClient.onDestroy();
+        }
+        mlocationClient = null;
     }
 }

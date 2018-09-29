@@ -2,6 +2,7 @@ package com.lwc.gaodetest;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import com.amap.api.navi.AMapNavi;
 import com.amap.api.navi.AMapNaviListener;
@@ -30,11 +31,12 @@ import java.util.List;
 
 public class SingleRouteCalculateActivity extends CheckPermissionsActivity implements AMapNaviListener, AMapNaviViewListener {
 
+    private static final String TAG = "SingleRouteCalculateActivity";
     private AMapNaviView mAMapNaviView;
     private AMapNavi mAMapNavi;
 
     protected NaviLatLng mStartLatlng = new NaviLatLng(28.19786, 112.969687);
-    protected NaviLatLng mEndLatlng = new NaviLatLng(40.084894, 116.603039);
+    protected NaviLatLng mEndLatlng = new NaviLatLng(27.833333, 113.166666);
     protected final List<NaviLatLng> sList = new ArrayList<NaviLatLng>();
     protected final List<NaviLatLng> eList = new ArrayList<NaviLatLng>();
     protected List<NaviLatLng> mWayPointList;
@@ -308,9 +310,14 @@ public class SingleRouteCalculateActivity extends CheckPermissionsActivity imple
 
     }
 
+
+    /**
+     * 取消导航
+     */
     @Override
     public void onNaviCancel() {
-
+        Log.e(TAG, "onNaviCancel");
+        this.finish();
     }
 
     @Override
@@ -356,5 +363,15 @@ public class SingleRouteCalculateActivity extends CheckPermissionsActivity imple
     @Override
     public void onNaviViewShowMode(int i) {
 
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        //拦截返回按键
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }

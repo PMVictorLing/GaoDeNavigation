@@ -11,20 +11,25 @@
         android:id="@+id/tv_start_nva"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        android:text="开始导航"/>
+        android:text="开始导航" />
 
 
     <Button
         android:id="@+id/bt_dialog"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:text="万能dialog"/>
+        android:text="万能dialog" />
 
     <TextView
         android:id="@+id/tv_string_size"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        />
+        android:visibility="gone" />
+
+    <com.amap.api.maps.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 
 </LinearLayout>
