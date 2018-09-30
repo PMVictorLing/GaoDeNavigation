@@ -3,8 +3,20 @@ package com.lwc.gaodetest.http;
 import android.content.Context;
 import android.util.ArrayMap;
 
+import java.io.File;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.net.FileNameMap;
+import java.net.URLConnection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.security.auth.callback.Callback;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 
 /**
  * 自己的一套实现
@@ -72,6 +84,11 @@ public class HttpUtils {
         if (callBack == null)
             callBack = EngineCallBack.DEFUALT_CALL_BACK;
 
+        //思考几个点
+        //1.作为libiry框架不能包含业务逻辑
+        //2.如果存在多条业务线
+        //只能让callback回调出去
+        callBack.onPreExecute(mContext,mParams);
 
         //判断执行
         if (mType == POST_REQUEST) {
@@ -103,15 +120,48 @@ public class HttpUtils {
      *
      * @param engine
      */
-    public void exChangeEngine(IHttpEngine engine) {
+    public HttpUtils exChangeEngine(IHttpEngine engine) {
         mIHttpEngine = engine;
+        return this;
     }
 
     public void get(String url, Map<String, Object> params, EngineCallBack callBack) {
-        mIHttpEngine.get(url, params, callBack);
+        mIHttpEngine.get(mContext, url, params, callBack);
     }
 
     public void post(String url, Map<String, Object> params, EngineCallBack callBack) {
-        mIHttpEngine.post(url, params, callBack);
+        mIHttpEngine.post(mContext, url, params, callBack);
     }
+
+
+    //拼接参数
+    public static String onJointParams(String url, Map<String, Object> params) {
+        if (params == null || params.size() <= 0) {
+            return url;
+        }
+
+        StringBuffer stringBuffer = new StringBuffer(url);
+        if (!url.contains("?")) {
+            stringBuffer.append("?");
+        } else {
+            if (!url.endsWith("?")) {
+                stringBuffer.append("&");
+            }
+        }
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            stringBuffer.append(entry.getKey() + "=" + entry.getValue() + "&");
+        }
+        stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+
+        return stringBuffer.toString();
+    }
+
+    //解析上面的class
+    public static Class<?> analysisClazzInfo(Object object) {
+        Type genType = object.getClass().getGenericSuperclass();
+        Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
+        return (Class<?>) params[0];
+    }
+
+
 }

@@ -27,7 +27,11 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.lwc.gaodetest.dialog.MyAlertDialog;
+import com.lwc.gaodetest.http.EngineCallBack;
 import com.lwc.gaodetest.http.HttpUtils;
+import com.lwc.gaodetest.http.OkHttpEngine;
+import com.lwc.gaodetest.http.model.HttpCallBack;
+import com.lwc.gaodetest.http.model.WanAndroidBean;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -188,7 +192,46 @@ public class MainActivity extends CheckPermissionsActivity implements LocationSo
 //        addCircleOptions().setVisible(true);
 
         //请求测试
-        HttpUtils.with(this).Url("").addParam("","").get().execute(null);
+        HttpUtils.with(this)
+                .Url("http://www.wanandroid.com/tree/json")
+                .get()
+                .exChangeEngine(new OkHttpEngine())//随意切换引擎
+                .execute(new HttpCallBack<WanAndroidBean>() {
+
+
+                    @Override
+                    protected void onPreExecute() {
+                        //加载进度条
+                    }
+
+                    @Override
+                    public void onSuccess(WanAndroidBean result) {
+                        //致命的缺点 还是String返回
+                        //string -> object 转成可操作的对象
+
+                        Log.e(TAG, "Success -- >" + result.getData().get(0).getName());
+
+
+                        //取消进度条
+
+                    }
+
+                    @Override
+                    public void OnError(Exception e) {
+
+                    }
+
+           /* public void Success(String result) {
+                //致命的缺点 还是String返回
+                //string -> object 转成可操作的对象
+
+                Log.e(TAG, "Success -- >" + result);
+
+
+                //取消进度条
+
+            }*/
+                });
 
     }
 
