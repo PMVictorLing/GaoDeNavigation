@@ -156,7 +156,7 @@ public class HttpUtils {
         return stringBuffer.toString();
     }
 
-    //解析上面的class
+    //解析上面的class 拿到他的泛型
     public static Class<?> analysisClazzInfo(Object object) {
         Type genType = object.getClass().getGenericSuperclass();
         Type[] params = ((ParameterizedType) genType).getActualTypeArguments();

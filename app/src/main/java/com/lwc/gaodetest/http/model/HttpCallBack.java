@@ -9,7 +9,7 @@ import com.lwc.gaodetest.http.HttpUtils;
 import java.util.Map;
 
 /**
- * 专门处理请求业务逻辑
+ * 专门处理请求业务逻辑 实现 EngineCallBack
  * <p>
  * Created by lingwancai on
  * 2018/9/30 13:54

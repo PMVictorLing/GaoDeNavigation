@@ -2,6 +2,7 @@ package com.lwc.gaodetest;
 
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.support.annotation.UiThread;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -51,12 +52,32 @@ public class MainActivity extends CheckPermissionsActivity implements LocationSo
     AMap aMap;
     //测试用
     private Marker changshamarker;
+    private TextView tvStartNva;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.findViewById(R.id.tv_start_nva).setOnClickListener(new View.OnClickListener() {
+        tvStartNva = (TextView) this.findViewById(R.id.tv_start_nva);
+
+        //定位
+        this.findViewById(R.id.tv_location).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, LatlngActivity.class));
+            }
+        });
+
+        //万能指示器
+        this.findViewById(R.id.tv_indication).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, IndicationAdapterActivity.class));
+            }
+        });
+
+        //导航
+        tvStartNva.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, SingleRouteCalculateActivity.class));
@@ -78,10 +99,10 @@ public class MainActivity extends CheckPermissionsActivity implements LocationSo
                 dialog.setOnClickLisener(R.id.tv_start_nva, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        locationOption = getDefaultOption();
-                        //设置定位参数
-                        locationClient.setLocationOption(locationOption);
-                        startLocation();
+//                        locationOption = getDefaultOption();
+//                        //设置定位参数
+//                        locationClient.setLocationOption(locationOption);
+//                        startLocation();
                         Toast.makeText(MainActivity.this, "获取到的值>>>>" + textView.getText(), Toast.LENGTH_LONG).show();
                         dialog.dismiss();
 
@@ -205,12 +226,21 @@ public class MainActivity extends CheckPermissionsActivity implements LocationSo
                     }
 
                     @Override
-                    public void onSuccess(WanAndroidBean result) {
+                    public void onSuccess(final WanAndroidBean result) {
                         //致命的缺点 还是String返回
                         //string -> object 转成可操作的对象
 
                         Log.e(TAG, "Success -- >" + result.getData().get(0).getName());
+                        //这是运行在子线程中
+//                        tvStartNva.setText(""+result.getData().get(0).getName());
 
+                        //切换UI线程 几种方式
+                        tvStartNva.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvStartNva.setText(""+result.getData().get(0).getName());
+                            }
+                        });
 
                         //取消进度条
 
